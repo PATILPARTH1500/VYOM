@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VYOM</title>
+</head>
+
+<body style="background:black; color:white; font-family:Arial; padding:40px;">
+
+    <h1>VYOM IS WORKING</h1>
+
+    <input type="text" id="user-input">
+
+    <button onclick="sendMessage()">
+        Send
+    </button>
+
+    <div id="chat-box"></div>
+
+    <script>
+
+        async function sendMessage(){
+
+            const input = document.getElementById("user-input");
+
+            const response = await fetch("/ask", {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    message: input.value
+                })
+            });
+
+            const data = await response.json();
+
+            document.getElementById("chat-box").innerHTML += `
+                <p>${data.response}</p>
+            `;
+        }
+
+    </script>
+
+</body>
+</html>
