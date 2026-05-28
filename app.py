@@ -30,7 +30,7 @@ Return only command word.
     response = requests.post(
         OLLAMA_URL,
         json={
-            "model": "phi3:mini",
+            "model": "tinyllama",
             "prompt": system_prompt,
             "stream": False
         }

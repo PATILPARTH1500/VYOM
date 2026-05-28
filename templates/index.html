@@ -1,45 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>VYOM</title>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>VYOM TERMINAL</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
 
-<body style="background:black; color:white; font-family:Arial; padding:40px;">
+<body>
 
-    <h1>VYOM IS WORKING</h1>
+<div class="vyom-root">
 
-    <input type="text" id="user-input">
+  <!-- TOPBAR -->
 
-    <button onclick="sendMessage()">
-        Send
-    </button>
+  <div class="topbar">
 
-    <div id="chat-box"></div>
+    <div class="topbar-left">
 
-    <script>
+      <div class="orb-wrap">
+        <div class="orb"></div>
+      </div>
 
-        async function sendMessage(){
+      <div>
 
-            const input = document.getElementById("user-input");
+        <div class="brand">
+          VYOM
+        </div>
 
-            const response = await fetch("/ask", {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body: JSON.stringify({
-                    message: input.value
-                })
-            });
+        <div class="brand-sub">
+          AI DESKTOP ASSISTANT
+        </div>
 
-            const data = await response.json();
+      </div>
 
-            document.getElementById("chat-box").innerHTML += `
-                <p>${data.response}</p>
-            `;
-        }
+    </div>
 
-    </script>
+    <div class="topbar-right">
+
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        online
+      </div>
+
+      <div class="sys-stat" id="cpu-stat">
+        CPU —
+      </div>
+
+      <div class="sys-stat" id="time-stat">
+        —:—
+      </div>
+
+      <div class="status-pill">
+        <div class="status-dot dim"></div>
+        ESP32
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MAIN -->
+
+  <div class="main-layout">
+
+    <!-- CHAT PANEL -->
+
+    <div class="chat-panel">
+
+      <div class="chat-box" id="chatBox">
+
+        <div class="msg-row">
+
+          <div class="msg-tag ai-tag">
+            VYOM
+          </div>
+
+          <div class="msg-content ai-content">
+            System initialized. VYOM v1.0 is ready.
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- INPUT -->
+
+      <div class="input-area">
+
+        <div class="input-row">
+
+          <div class="prompt-glyph">
+            ›
+          </div>
+
+          <input
+            class="cmd-input"
+            id="cmdInput"
+            type="text"
+            placeholder="Enter command or ask VYOM..."
+            autocomplete="off"
+          />
+
+          <button class="send-btn" onclick="handleSend()">
+
+            ↑
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+
+    <div class="sidebar">
+
+      <div class="sidebar-scroll">
+
+        <!-- QUICK COMMANDS -->
+
+        <div class="sidebar-section">
+
+          <div class="section-label">
+            Quick Commands
+          </div>
+
+          <div class="cmd-item" onclick="fillCmd('open github')">
+            open github
+          </div>
+
+          <div class="cmd-item" onclick="fillCmd('open vscode')">
+            open vscode
+          </div>
+
+          <div class="cmd-item" onclick="fillCmd('open spotify')">
+            open spotify
+          </div>
+
+          <div class="cmd-item" onclick="fillCmd('open youtube')">
+            open youtube
+          </div>
+
+          <div class="cmd-item" onclick="fillCmd('open terminal')">
+            open terminal
+          </div>
+
+        </div>
+
+        <!-- WORKSPACES -->
+
+        <div class="sidebar-section">
+
+          <div class="section-label">
+            Workspace Modes
+          </div>
+
+          <div class="mode-item" onclick="fillCmd('start coding workspace')">
+            coding workspace
+          </div>
+
+          <div class="mode-item" onclick="fillCmd('start study workspace')">
+            study workspace
+          </div>
+
+          <div class="mode-item" onclick="fillCmd('focus mode')">
+            focus mode
+          </div>
+
+        </div>
+
+        <!-- SENSOR PLACEHOLDER -->
+
+        <div class="sidebar-section">
+
+          <div class="section-label">
+            Sensors — ESP32
+          </div>
+
+          <div class="placeholder-block">
+
+            <div class="ph-label">
+              Temperature
+            </div>
+
+            <div class="ph-bar">
+              <div class="ph-bar-fill" style="width:40%"></div>
+            </div>
+
+            <div class="ph-value">
+              — °C
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
+
 </html>
