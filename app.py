@@ -1,12 +1,28 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import psutil
+import logging
 
 from automation.actions import *
 
+# -----------------------------------
+# FLASK APP
+# -----------------------------------
+
 app = Flask(__name__)
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+# -----------------------------------
+# DISABLE FLASK TERMINAL SPAM
+# -----------------------------------
 
+log = logging.getLogger('werkzeug')
+log.disabled = True
+
+# -----------------------------------
+# OLLAMA CONFIG
+# -----------------------------------
+
+OLLAMA_URL = "http://localhost:11434/api/generate"
 
 # -----------------------------------
 # LOCAL COMMAND ROUTER
@@ -16,69 +32,79 @@ def detect_local_command(message):
 
     msg = message.lower()
 
-
+    # -----------------------------------
     # BROWSER
+    # -----------------------------------
 
     if "github" in msg:
         return "github"
 
-    if "instagram" in msg:
+    elif "instagram" in msg:
         return "instagram"
 
-    if "youtube" in msg:
+    elif "youtube" in msg:
         return "youtube"
 
-
+    # -----------------------------------
     # APPS
+    # -----------------------------------
 
-    if "vscode" in msg or "vs code" in msg:
+    elif "vscode" in msg or "vs code" in msg:
         return "vscode"
 
-    if "terminal" in msg:
+    elif "terminal" in msg:
         return "terminal"
 
-    if "spotify" in msg:
+    elif "spotify" in msg:
         return "spotify"
 
-
+    # -----------------------------------
     # WORKSPACES
+    # -----------------------------------
 
-    if "coding workspace" in msg:
+    elif "coding workspace" in msg:
         return "coding_workspace"
-
 
     return None
 
-
 # -----------------------------------
-# OLLAMA CHAT
+# OLLAMA AI CHAT
 # -----------------------------------
 
 def ask_ai(prompt):
 
-    response = requests.post(
+    try:
 
-        OLLAMA_URL,
+        response = requests.post(
 
-        json={
+            OLLAMA_URL,
 
-            "model": "tinyllama",
+            json={
 
-            "prompt": prompt,
+                "model": "tinyllama",
 
-            "stream": False
+                "prompt": prompt,
 
-        }
+                "stream": False
 
-    )
+            },
 
-    data = response.json()
+            timeout=60
 
-    return data["response"]
+        )
 
+        data = response.json()
+
+        return data.get("response", "No response from AI.")
+
+    except Exception as e:
+
+        print("OLLAMA ERROR:", e)
+
+        return "AI system offline."
 
 # -----------------------------------
-# ROUTES
+# HOME PAGE
 # -----------------------------------
 
 @app.route("/")
@@ -86,78 +112,121 @@ def home():
 
     return render_template("index.html")
 
+# -----------------------------------
+# CHAT API
+# -----------------------------------
 
 @app.route("/ask", methods=["POST"])
 def ask():
 
-    data = request.get_json()
+    try:
 
-    user_message = data.get("message", "")
+        data = request.get_json()
 
-    # -----------------------------------
-    # LOCAL COMMAND DETECTION
-    # -----------------------------------
+        user_message = data.get("message", "")
 
-    intent = detect_local_command(user_message)
-
-    # -----------------------------------
-    # EXECUTE COMMANDS
-    # -----------------------------------
-
-    if intent == "github":
-
-        open_github()
-
-        result = "Opening GitHub..."
-
-    elif intent == "instagram":
-
-        open_instagram()
-
-        result = "Opening Instagram..."
-
-    elif intent == "youtube":
-
-        open_youtube()
-
-        result = "Opening YouTube..."
-
-    elif intent == "vscode":
-
-        open_vscode()
-
-        result = "Opening VS Code..."
-
-    elif intent == "terminal":
-
-        open_terminal()
-
-        result = "Opening terminal..."
-
-    elif intent == "spotify":
-
-        open_spotify()
-
-        result = "Launching Spotify..."
-
-    elif intent == "coding_workspace":
-
-        coding_workspace()
-
-        result = "Launching coding workspace..."
-
-    else:
+        intent = detect_local_command(user_message)
 
         # -----------------------------------
-        # FALLBACK TO AI
+        # COMMAND EXECUTION
         # -----------------------------------
 
-        result = ask_ai(user_message)
+        if intent == "github":
 
-    return jsonify({
-        "response": result
-    })
+            open_github()
 
+            result = "Opening GitHub..."
+
+        elif intent == "instagram":
+
+            open_instagram()
+
+            result = "Opening Instagram..."
+
+        elif intent == "youtube":
+
+            open_youtube()
+
+            result = "Opening YouTube..."
+
+        elif intent == "vscode":
+
+            open_vscode()
+
+            result = "Opening VS Code..."
+
+        elif intent == "terminal":
+
+            open_terminal()
+
+            result = "Opening terminal..."
+
+        elif intent == "spotify":
+
+            open_spotify()
+
+            result = "Launching Spotify..."
+
+        elif intent == "coding_workspace":
+
+            coding_workspace()
+
+            result = "Launching coding workspace..."
+
+        else:
+
+            # -----------------------------------
+            # AI FALLBACK
+            # -----------------------------------
+
+            result = ask_ai(user_message)
+
+        return jsonify({
+
+            "response": result
+
+        })
+
+    except Exception as e:
+
+        print("ASK ROUTE ERROR:", e)
+
+        return jsonify({
+
+            "response": "System error occurred."
+
+        })
+
+# -----------------------------------
+# SYSTEM STATS API
+# -----------------------------------
+
+@app.route("/system")
+def system_data():
+
+    try:
+
+        cpu = psutil.cpu_percent(interval=0.5)
+
+        ram = psutil.virtual_memory().percent
+
+        return jsonify({
+
+            "cpu": cpu,
+            "ram": ram
+
+        })
+
+    except Exception as e:
+
+        print("SYSTEM API ERROR:", e)
+
+        return jsonify({
+
+            "cpu": 0,
+            "ram": 0
+
+        })
 
 # -----------------------------------
 # MAIN
@@ -165,4 +234,16 @@ def ask():
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    print("\n===================================")
+    print(" VYOM AI ASSISTANT STARTED ")
+    print(" http://127.0.0.1:5000 ")
+    print("===================================\n")
+
+    app.run(
+
+        host="0.0.0.0",
+        port=5000,
+        debug=False,
+        use_reloader=False
+
+    )

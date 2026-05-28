@@ -158,20 +158,30 @@ function updateTime() {
 
 }
 
-function updateCPU() {
+async function updateSystemStats() {
 
-    const cpu = Math.floor(Math.random() * 30) + 5;
+    try {
 
-    document.getElementById("cpu-stat").innerText = `CPU ${cpu}%`;
+        const response = await fetch("/system");
+
+        const data = await response.json();
+
+        document.getElementById("cpu-stat").innerText =
+            `CPU ${data.cpu}%`;
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
 
 }
-
 updateTime();
 
-updateCPU();
+updateSystemStats();
 
 setInterval(updateTime, 1000);
 
-setInterval(updateCPU, 4000);
+setInterval(updateSystemStats, 3000);
 
 input.focus();
