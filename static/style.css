@@ -406,3 +406,33 @@ body {
     color: #777;
 
 }
+
+.chat-box {
+
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    scrollbar-color: #2a2a2a transparent;
+
+}
+
+.chat-box::-webkit-scrollbar {
+
+    width: 6px;
+
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+
+    background: #2a2a2a;
+
+    border-radius: 10px;
+
+}
+
+.chat-box::-webkit-scrollbar-track {
+
+    background: transparent;
+
+}

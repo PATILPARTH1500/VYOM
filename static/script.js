@@ -2,6 +2,10 @@ const input = document.getElementById("cmdInput");
 
 const chatBox = document.getElementById("chatBox");
 
+// ------------------------------------
+// FILL COMMAND
+// ------------------------------------
+
 function fillCmd(cmd) {
 
     input.value = cmd;
@@ -9,6 +13,38 @@ function fillCmd(cmd) {
     input.focus();
 
 }
+
+// ------------------------------------
+// ADD MESSAGE
+// ------------------------------------
+
+function addMessage(tag, content, isAI = false) {
+
+    const row = document.createElement("div");
+
+    row.className = "msg-row";
+
+    row.innerHTML = `
+
+        <div class="msg-tag ${isAI ? "ai-tag" : "user-tag"}">
+            ${tag}
+        </div>
+
+        <div class="msg-content ${isAI ? "ai-content" : ""}">
+            ${content}
+        </div>
+
+    `;
+
+    chatBox.appendChild(row);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+}
+
+// ------------------------------------
+// SEND MESSAGE
+// ------------------------------------
 
 async function handleSend() {
 
@@ -18,27 +54,11 @@ async function handleSend() {
 
     // USER MESSAGE
 
-    const userRow = document.createElement("div");
-
-    userRow.className = "msg-row";
-
-    userRow.innerHTML = `
-
-        <div class="msg-tag user-tag">
-            YOU
-        </div>
-
-        <div class="msg-content">
-            ${message}
-        </div>
-
-    `;
-
-    chatBox.appendChild(userRow);
+    addMessage("YOU", message);
 
     input.value = "";
 
-    // THINKING
+    // THINKING MESSAGE
 
     const thinkingId = "thinking-" + Date.now();
 
@@ -75,66 +95,60 @@ async function handleSend() {
             },
 
             body: JSON.stringify({
+
                 message: message
+
             })
 
         });
 
         const data = await response.json();
 
-        document.getElementById(thinkingId).remove();
+        const thinkingElement =
+            document.getElementById(thinkingId);
 
-        const aiRow = document.createElement("div");
+        if (thinkingElement) {
 
-        aiRow.className = "msg-row";
+            thinkingElement.remove();
 
-        aiRow.innerHTML = `
+        }
 
-            <div class="msg-tag ai-tag">
-                VYOM
-            </div>
+        // AI RESPONSE
 
-            <div class="msg-content ai-content">
-                ${data.response}
-            </div>
-
-        `;
-
-        chatBox.appendChild(aiRow);
+        addMessage("VYOM", data.response, true);
 
     }
 
     catch (error) {
 
-        document.getElementById(thinkingId).remove();
+        const thinkingElement =
+            document.getElementById(thinkingId);
 
-        const errRow = document.createElement("div");
+        if (thinkingElement) {
 
-        errRow.className = "msg-row";
+            thinkingElement.remove();
 
-        errRow.innerHTML = `
+        }
 
-            <div class="msg-tag ai-tag">
-                ERROR
-            </div>
+        addMessage(
 
-            <div class="msg-content">
-                Flask backend not responding.
-            </div>
+            "ERROR",
 
-        `;
+            "Flask backend not responding."
 
-        chatBox.appendChild(errRow);
+        );
 
         console.error(error);
 
     }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
-
     input.focus();
 
 }
+
+// ------------------------------------
+// ENTER KEY
+// ------------------------------------
 
 input.addEventListener("keydown", function (e) {
 
@@ -146,6 +160,10 @@ input.addEventListener("keydown", function (e) {
 
 });
 
+// ------------------------------------
+// TIME
+// ------------------------------------
+
 function updateTime() {
 
     const now = new Date();
@@ -154,9 +172,14 @@ function updateTime() {
 
     const m = String(now.getMinutes()).padStart(2, "0");
 
-    document.getElementById("time-stat").innerText = `${h}:${m}`;
+    document.getElementById("time-stat").innerText =
+        `${h}:${m}`;
 
 }
+
+// ------------------------------------
+// SYSTEM STATS
+// ------------------------------------
 
 async function updateSystemStats() {
 
@@ -169,13 +192,20 @@ async function updateSystemStats() {
         document.getElementById("cpu-stat").innerText =
             `CPU ${data.cpu}%`;
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.log(error);
 
     }
 
 }
+
+// ------------------------------------
+// INITIALIZE
+// ------------------------------------
+
 updateTime();
 
 updateSystemStats();
@@ -185,3 +215,5 @@ setInterval(updateTime, 1000);
 setInterval(updateSystemStats, 3000);
 
 input.focus();
+
+chatBox.scrollTop = chatBox.scrollHeight;

@@ -25,6 +25,13 @@ log.disabled = True
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 # -----------------------------------
+# LIVE UI VARIABLES
+# -----------------------------------
+
+latest_user_message = ""
+latest_ai_response = ""
+
+# -----------------------------------
 # LOCAL COMMAND ROUTER
 # -----------------------------------
 
@@ -83,7 +90,22 @@ def ask_ai(prompt):
 
                 "model": "tinyllama",
 
-                "prompt": prompt,
+                "prompt": f"""
+                You are VYOM, an advanced desktop AI assistant.
+
+Rules:
+- Keep replies under 3 lines
+- Be modern and concise
+- Never repeat responses
+- Speak naturally
+- Do not give outdated information
+- Avoid long paragraphs
+
+User:
+{prompt}
+
+VYOM:
+""",
 
                 "stream": False
 
@@ -102,7 +124,6 @@ def ask_ai(prompt):
         print("OLLAMA ERROR:", e)
 
         return "AI system offline."
-
 # -----------------------------------
 # HOME PAGE
 # -----------------------------------
@@ -119,11 +140,16 @@ def home():
 @app.route("/ask", methods=["POST"])
 def ask():
 
+    global latest_user_message
+    global latest_ai_response
+
     try:
 
         data = request.get_json()
 
         user_message = data.get("message", "")
+
+        latest_user_message = user_message
 
         intent = detect_local_command(user_message)
 
@@ -181,6 +207,8 @@ def ask():
 
             result = ask_ai(user_message)
 
+        latest_ai_response = result
+
         return jsonify({
 
             "response": result
@@ -227,6 +255,23 @@ def system_data():
             "ram": 0
 
         })
+
+# -----------------------------------
+# LIVE FEED API
+# -----------------------------------
+
+@app.route("/live-feed")
+def live_feed():
+
+    global latest_user_message
+    global latest_ai_response
+
+    return jsonify({
+
+        "user": latest_user_message,
+        "ai": latest_ai_response
+
+    })
 
 # -----------------------------------
 # MAIN
